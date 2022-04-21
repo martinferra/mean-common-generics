@@ -49,7 +49,11 @@ function applyObjectIdRecursive(obj) {
 }
 
 function replaceById(obj) {
-  return obj?._id || obj;
+  if(obj instanceof Array) {
+    return obj.map(_obj=>replaceById(_obj))
+  } else {
+    return obj?._id || obj;
+  }
 }
 
 module.exports = {
