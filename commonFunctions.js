@@ -28,7 +28,7 @@ function applyRecursive(parentObj, parentKey, obj, cb) {
     if (!obj.hasOwnProperty(key)) {
       continue;
     }
-    if (typeof obj[key] == "object" && obj[key] !== null) {
+    if(typeof obj[key] == "object" && obj[key] !== null) {
       applyRecursive(obj, key, obj[key], cb);
     } else {
       cb(parentObj, parentKey, obj, key);
@@ -52,7 +52,7 @@ function replaceById(obj) {
   if(obj instanceof Array) {
     return obj.map(_obj=>replaceById(_obj))
   } else {
-    return obj?._id || obj;
+    return obj?.value?._id || obj?.value || obj?._id || obj;
   }
 }
 
