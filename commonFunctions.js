@@ -1,6 +1,4 @@
-const mongoose = require('mongoose');
-const lodash = require('lodash');
-const cloneDeep = lodash.cloneDeep;
+const moment = require('moment');
 
 function expandRegEx(regEx) {
   return regEx
@@ -37,17 +35,6 @@ function applyRecursive(parentObj, parentKey, obj, cb) {
   return obj;
 }
   
-function applyObjectIdRecursive(obj) {
-  clonedObj = cloneDeep(obj);
-  return applyRecursive(null, null, clonedObj, (po,pk,o,k)=>{
-    /* Ej: "customer: {$oid:'aaaaa'}" se reemplaza por 
-        "customer: ObjectId('aaaaa')" */
-    if(k==='$oid' && typeof o[k] === 'string') {
-      po[pk] = mongoose.Types.ObjectId(o[k]);
-    }
-  })
-}
-
 function replaceById(obj) {
   if(obj instanceof Array) {
     return obj.map(_obj=>replaceById(_obj))
@@ -60,6 +47,5 @@ module.exports = {
   expandRegEx,
   getRegEx,
   applyRecursive,
-  applyObjectIdRecursive,
-  replaceById
+  replaceById,
 }
