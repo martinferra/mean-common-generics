@@ -1,3 +1,5 @@
+const { BSON } = require('bson');
+
 function expandRegEx(regEx) {
   return regEx
     .replace(/a|á/ig, '[aá]')
@@ -72,6 +74,90 @@ function stringToFilenameSuffix(inputString) {
   return formattedString;
 }
 
+function preBSONSerialization(obj, preProccessByDefault=true) {
+  if (
+    obj.type === 'keepAlive' || 
+    obj.type === 'error' ||
+    (!obj.convertType && !preProccessByDefault)
+  ) {
+    return obj;
+  }
+  if (obj.convertType === 'not-convert') {
+    return obj.value;
+  }
+  if (obj.convertType === 'convert') {
+    return preBSONSerialization(obj.value, preProccessByDefault);
+  }
+  if (obj instanceof ArrayBuffer) {
+    return {
+      convertType: 'ArrayBuffer',
+      value: new Uint8Array(obj)
+    };
+  } else if (Array.isArray(obj)) {
+    return obj.map(_obj => preBSONSerialization(_obj, preProccessByDefault));
+  } else if (typeof obj === 'object' && obj !== null) {
+    const result = {};
+    for (const key in obj) {
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
+        result[key] = preBSONSerialization(obj[key]);
+      }
+    }
+    return result;
+  } else {
+    return obj;
+  }
+}
+
+function bufferToArrayBuffer(buffer) {
+  return buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength);
+}
+
+function postBSONDeserialization(obj, postProccessByDefault=true) {
+  if (
+    obj.type === 'keepAlive' || 
+    obj.type === 'error' ||
+    (!obj.convertType && !postProccessByDefault)
+  ) {
+    return obj;
+  }
+  if (obj.convertType === 'not-convert') {
+    return obj.value;
+  }
+  if (obj.convertType === 'convert') {
+    return postBSONDeserialization(obj.value, postProccessByDefault);
+  }
+  if (obj.convertType === 'ArrayBuffer') {
+    return bufferToArrayBuffer(obj.value.buffer);
+  } else if (Array.isArray(obj)) {
+    return obj.map(_obj => postBSONDeserialization(_obj, postProccessByDefault));
+  } else if (typeof obj === 'object' && obj != null) {
+    const result = {};
+    for (const key in obj) {
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
+        result[key] = postBSONDeserialization(obj[key], postProccessByDefault);
+      }
+    }
+    return result;
+  } else {
+    return obj;
+  }
+}
+
+function getMessageFromBlob(blob, postProccessByDefault=true) {
+  return blob.arrayBuffer().then(
+    arrayBuffer => postBSONDeserialization(
+      BSON.deserialize(new Uint8Array(arrayBuffer), postProccessByDefault)
+    )
+  );
+}
+
+function getNotConvertWrapper(obj) {
+  return {
+    convertType: 'not-convert',
+    value: obj
+  }
+}
+
 module.exports = {
   expandRegEx,
   getRegEx,
@@ -79,5 +165,9 @@ module.exports = {
   replaceById,
   dateToFilenameSuffix,
   getTimestampString,
-  stringToFilenameSuffix
+  stringToFilenameSuffix,
+  preBSONSerialization,
+  postBSONDeserialization,
+  getMessageFromBlob,
+  getNotConvertWrapper
 }
