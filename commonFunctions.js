@@ -93,6 +93,11 @@ function preBSONSerialization(obj, preProccessByDefault=true) {
       convertType: 'ArrayBuffer',
       value: new Uint8Array(obj)
     };
+  } else if (obj instanceof Buffer) {
+    return {
+      convertType: 'Buffer',
+      value: Uint8Array.from(obj)
+    };
   } else if (Array.isArray(obj)) {
     return obj.map(_obj => preBSONSerialization(_obj, preProccessByDefault));
   } else if (typeof obj === 'object' && obj !== null) {
@@ -126,11 +131,16 @@ function postBSONDeserialization(obj, postProccessByDefault=true) {
   if (obj.convertType === 'convert') {
     return postBSONDeserialization(obj.value, postProccessByDefault);
   }
+  if (obj.convertType === 'Buffer') {
+    return obj.value.buffer;
+  }
   if (obj.convertType === 'ArrayBuffer') {
     return bufferToArrayBuffer(obj.value.buffer);
-  } else if (Array.isArray(obj)) {
+  }
+  if (Array.isArray(obj)) {
     return obj.map(_obj => postBSONDeserialization(_obj, postProccessByDefault));
-  } else if (typeof obj === 'object' && obj != null) {
+  }
+  if (typeof obj === 'object' && obj != null) {
     const result = {};
     for (const key in obj) {
       if (Object.prototype.hasOwnProperty.call(obj, key)) {
@@ -138,9 +148,8 @@ function postBSONDeserialization(obj, postProccessByDefault=true) {
       }
     }
     return result;
-  } else {
-    return obj;
   }
+  return obj;
 }
 
 function getMessageFromBlob(blob, postProccessByDefault=true) {
