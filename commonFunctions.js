@@ -167,6 +167,11 @@ function getNotConvertWrapper(obj) {
   }
 }
 
+function logMemoryUsage(logEntryHeader) {
+  const mu = process.memoryUsage();
+  console.log(`MU: ${new Date()} - ${logEntryHeader}:  ${mu.arrayBuffers} ${mu.external} ${mu.heapTotal} ${mu.heapUsed} ${mu.rss}`);
+}
+
 module.exports = {
   expandRegEx,
   getRegEx,
@@ -178,5 +183,6 @@ module.exports = {
   preBSONSerialization,
   postBSONDeserialization,
   getMessageFromBlob,
-  getNotConvertWrapper
+  getNotConvertWrapper,
+  logMemoryUsage
 }
