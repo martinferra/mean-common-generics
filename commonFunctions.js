@@ -155,7 +155,8 @@ function postBSONDeserialization(obj, postProccessByDefault=true) {
 function getMessageFromBlob(blob, postProccessByDefault=true) {
   return blob.arrayBuffer().then(
     arrayBuffer => postBSONDeserialization(
-      BSON.deserialize(new Uint8Array(arrayBuffer), postProccessByDefault)
+      BSON.deserialize(new Uint8Array(arrayBuffer)),
+      postProccessByDefault
     )
   );
 }
