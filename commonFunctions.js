@@ -50,8 +50,9 @@ function dateToFilenameSuffix(date) {
   let hours = date.getHours().toString().padStart(2, '0');
   let minutes = date.getMinutes().toString().padStart(2, '0');
   let seconds = date.getSeconds().toString().padStart(2, '0');
+  let milliseconds = date.getMilliseconds().toString().padStart(3, '0');
 
-  return `${year}${month}${day}${hours}${minutes}${seconds}`;
+  return `${year}${month}${day}${hours}${minutes}${seconds}${milliseconds}`;
 };
 
 function getTimestampString() {
@@ -170,7 +171,7 @@ function getNotConvertWrapper(obj) {
 
 function logMemoryUsage(logEntryHeader) {
   const mu = process.memoryUsage();
-  console.log(`MU: ${new Date()} - ${logEntryHeader}:  ${mu.arrayBuffers} ${mu.external} ${mu.heapTotal} ${mu.heapUsed} ${mu.rss}`);
+  console.log(`${logEntryHeader}\t${getTimestampString()}\t${mu.arrayBuffers}\t${mu.external}\t${mu.heapTotal}\t${mu.heapUsed}\t${mu.rss}`);
 }
 
 module.exports = {
