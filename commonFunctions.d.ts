@@ -7,6 +7,6 @@ export function stringToFilenameSuffix(str: string): string;
 export function getTimestampString(): string;
 export function preBSONSerialization(obj: any): any;
 export function postBSONDeserialization(obj: any): any;
-export function getMessageFromBlob(blob: Blob, postProccessByDefault: boolean): Promise<any>;
+export function getMessageFromBlob(blob: Blob, postProcessByDefault: boolean): Promise<any>;
 export function getNotConvertWrapper(obj: any): any;
 export function logMemoryUsage(logEntryHeader: string): string;

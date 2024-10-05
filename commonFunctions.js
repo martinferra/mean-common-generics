@@ -75,11 +75,11 @@ function stringToFilenameSuffix(inputString) {
   return formattedString;
 }
 
-function preBSONSerialization(obj, preProccessByDefault=true) {
+function preBSONSerialization(obj, preProcessByDefault=true) {
   if (
     obj.type === 'keepAlive' || 
     obj.type === 'error' ||
-    (!obj.convertType && !preProccessByDefault)
+    (!obj.convertType && !preProcessByDefault)
   ) {
     return obj;
   }
@@ -87,7 +87,7 @@ function preBSONSerialization(obj, preProccessByDefault=true) {
     return obj.value;
   }
   if (obj.convertType === 'convert') {
-    return preBSONSerialization(obj.value, preProccessByDefault);
+    return preBSONSerialization(obj.value, preProcessByDefault);
   }
   if (obj instanceof ArrayBuffer) {
     return {
@@ -100,7 +100,7 @@ function preBSONSerialization(obj, preProccessByDefault=true) {
       value: Uint8Array.from(obj)
     };
   } else if (Array.isArray(obj)) {
-    return obj.map(_obj => preBSONSerialization(_obj, preProccessByDefault));
+    return obj.map(_obj => preBSONSerialization(_obj, preProcessByDefault));
   } else if (typeof obj === 'object' && obj !== null) {
     const result = {};
     for (const key in obj) {
@@ -118,11 +118,11 @@ function bufferToArrayBuffer(buffer) {
   return buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength);
 }
 
-function postBSONDeserialization(obj, postProccessByDefault=true) {
+function postBSONDeserialization(obj, postProcessByDefault=true) {
   if (
     obj.type === 'keepAlive' || 
     obj.type === 'error' ||
-    (!obj.convertType && !postProccessByDefault)
+    (!obj.convertType && !postProcessByDefault)
   ) {
     return obj;
   }
@@ -130,7 +130,7 @@ function postBSONDeserialization(obj, postProccessByDefault=true) {
     return obj.value;
   }
   if (obj.convertType === 'convert') {
-    return postBSONDeserialization(obj.value, postProccessByDefault);
+    return postBSONDeserialization(obj.value, postProcessByDefault);
   }
   if (obj.convertType === 'Buffer') {
     return obj.value.buffer;
@@ -139,13 +139,13 @@ function postBSONDeserialization(obj, postProccessByDefault=true) {
     return bufferToArrayBuffer(obj.value.buffer);
   }
   if (Array.isArray(obj)) {
-    return obj.map(_obj => postBSONDeserialization(_obj, postProccessByDefault));
+    return obj.map(_obj => postBSONDeserialization(_obj, postProcessByDefault));
   }
   if (typeof obj === 'object' && obj != null) {
     const result = {};
     for (const key in obj) {
       if (Object.prototype.hasOwnProperty.call(obj, key)) {
-        result[key] = postBSONDeserialization(obj[key], postProccessByDefault);
+        result[key] = postBSONDeserialization(obj[key], postProcessByDefault);
       }
     }
     return result;
@@ -153,11 +153,11 @@ function postBSONDeserialization(obj, postProccessByDefault=true) {
   return obj;
 }
 
-function getMessageFromBlob(blob, postProccessByDefault=true) {
+function getMessageFromBlob(blob, postProcessByDefault=true) {
   return blob.arrayBuffer().then(
     arrayBuffer => postBSONDeserialization(
       BSON.deserialize(new Uint8Array(arrayBuffer)),
-      postProccessByDefault
+      postProcessByDefault
     )
   );
 }
